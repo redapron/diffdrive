@@ -48,16 +48,21 @@ int main(){
 	createTrackbar( "RED Wheel", "Velocity", &alpha_slider, slider_max, on_trackbar );
 	createTrackbar( "BLUE Wheel", "Velocity", &beta_slider, slider_max, on_trackbar );
 	
-	bool isGoStraight = false;
-	Point2d ICC;
-	double x, y, theta, dTime;
-	double vLeft, vRight, l;
-	double w, R;
+	double dTime = 0.1;
+
+	bool isGoStraight;
+	bool isCollide;
+	
+	double x, y, theta;
 	Mat sol = (Mat_<double>(3,1) <<	250,
 									250,
 									90 * M_PI / 180	);
 
-// <1.9> DRAW AN OBSTACLEMAP WHICH WILL BE COPIED TO THE ACTUAL MAP
+	Point2d ICC;
+	double vLeft, vRight, l;
+	double w, R;
+
+// <1.9> DRAW AN OBSTACLEMAP WHICH WILL BE COPIED TO THE REAL MAP
 	Mat obstacleMap(500,500, CV_8UC3, WHITE);
 	int gridSize = 25;
 	for (int k=0; k<obstacleMap.rows; k=k+gridSize) {
@@ -82,7 +87,6 @@ int main(){
 		x = sol.at<double>(0);
 		y = sol.at<double>(1);
 		theta = sol.at<double>(2);
-		dTime = 0.1;
 
 		vLeft = alpha_slider-100;
 		vRight =  beta_slider-100;
@@ -150,7 +154,7 @@ int main(){
 					untouchObstacle++;
 		//cout << "\tuntouchObstacle: " << untouchObstacle << endl;
 
-		bool isCollide = false;
+		isCollide = false;
 		if (totalObstacle != untouchObstacle) isCollide = true;
 		if (isCollide) {
 			carPosition = Point2d(x,y);
@@ -185,7 +189,6 @@ int main(){
 		//cout << rightWheel << endl;
 		//cout << cos(theta) << endl;
 
-// <3> DRAW WHAT THE CAR SEE
 
 		char c = waitKey(100);
 		if (c == 27) break;
