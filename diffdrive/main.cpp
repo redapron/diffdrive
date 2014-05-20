@@ -14,7 +14,7 @@ using namespace std;
 #define BLACK Scalar(0,0,0)
 #define WHITE Scalar(255,255,255)
 #define GRAY Scalar(222,222,222)
-double rightAngleInRad = 90 * M_PI / 180;
+double const rightAngleInRad = 90 * M_PI / 180;
 
 Point2d lineBegin, lineEnd;
 
@@ -33,22 +33,31 @@ void onMouse(int event, int x, int y, int flags, void* param)
 	}
 }
 
+// STATE OF THE ROBOT
+double vRed = 0, vBlue = 0;
+double aRed = 0, aBlue = 0;
+
+double dTime = 0.1;
 
 const int slider_max = 200;
-int alpha_slider = 100, beta_slider = 100;
+int alpha_slider = 100, beta_slider = 100, gamma_slider = 100, delta_slider = 100;
 
 void on_trackbar( int, void* )
 {
-	// Do nothing!
+	aRed = alpha_slider - 100;
+	aBlue = beta_slider - 100;
+	vRed = gamma_slider - 100;
+	vBlue = delta_slider - 100;
 }
 
 int main(){
 // <0> CREATE TRACKBAR FOR VELOCITY PARAMETER
-	namedWindow("Velocity", 1);
-	createTrackbar( "RED Wheel", "Velocity", &alpha_slider, slider_max, on_trackbar );
-	createTrackbar( "BLUE Wheel", "Velocity", &beta_slider, slider_max, on_trackbar );
+	namedWindow("Acceleration and Velocity", 1);
+	createTrackbar("RED (a)", "Acceleration and Velocity", &alpha_slider, slider_max, on_trackbar );
+	createTrackbar("BLUE (a)", "Acceleration and Velocity", &beta_slider, slider_max, on_trackbar );
+	createTrackbar("RED (v)", "Acceleration and Velocity", &gamma_slider, slider_max, on_trackbar);
+	createTrackbar("BLUE (v)", "Acceleration and Velocity", &delta_slider, slider_max, on_trackbar);
 	
-	double dTime = 0.1;
 
 	bool isGoStraight;
 	bool isCollide;
@@ -59,10 +68,10 @@ int main(){
 									90 * M_PI / 180	);
 
 	Point2d ICC;
-	double vLeft, vRight, l;
+	double l;
 	double w, R;
 
-// <1.9> DRAW AN OBSTACLEMAP WHICH WILL BE COPIED TO THE REAL MAP
+// <1.9> DRAW GRID ON THE OBSTACLEMAP WHICH WILL BE COPIED TO THE REAL MAP
 	Mat obstacleMap(500,500, CV_8UC3, WHITE);
 	int gridSize = 25;
 	for (int k=0; k<obstacleMap.rows; k=k+gridSize) {
@@ -88,16 +97,16 @@ int main(){
 		y = sol.at<double>(1);
 		theta = sol.at<double>(2);
 
-		vLeft = alpha_slider-100;
-		vRight =  beta_slider-100;
 		l = 50.0;
+		vRed += aRed*dTime;
+		vBlue += aBlue*dTime;
 
 // <1> FIND CAR NEW POSITION
-		w = (vRight - vLeft)/l;
-		if (vRight == vLeft) isGoStraight = true;
+		w = (vBlue - vRed)/l;
+		if (vBlue == vRed) isGoStraight = true;
 		else isGoStraight = false;
 		if (!isGoStraight) {
-			R = (l/2)*(vLeft+vRight)/(vRight-vLeft);
+			R = (l/2)*(vRed+vBlue)/(vBlue-vRed);
 
 			ICC = Vec2d(	x - R*sin(theta),
 							y +	R*cos(theta) );
@@ -118,7 +127,7 @@ int main(){
 			Mat term1 = (Mat_<double>(3,3) <<	cos(theta),	-sin(theta),	x, 
 												sin(theta),	cos(theta),		y, 
 												0,			0,				1  );
-			Mat term2 = (Mat_<double>(3,3) <<	1,			0,				vRight*dTime, 
+			Mat term2 = (Mat_<double>(3,3) <<	1,			0,				vBlue*dTime, 
 												0,			1,				0, 
 												0,			0,				1  );
 			Mat tempSol = term1*term2;
@@ -235,6 +244,16 @@ int main(){
 					sol = (Mat_<double>(3,1) << tempSol.at<double>(0,2),
 												tempSol.at<double>(1,2),
 												theta						);
+					break;
+					
+				}
+				if (cmd.compare("reset") == 0){
+					vRed = 0, vBlue = 0;
+					aRed = 0, aBlue = 0;
+					setTrackbarPos("RED (a)", "Acceleration and Velocity", 100);
+					setTrackbarPos("BLUE (a)", "Acceleration and Velocity", 100);
+					setTrackbarPos("RED (v)", "Acceleration and Velocity", 100);
+					setTrackbarPos("BLUE (v)", "Acceleration and Velocity", 100);
 					break;
 				}
 			}
