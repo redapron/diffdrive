@@ -84,6 +84,10 @@ int main(){
 // <1.01> DRAW OBSTACLE ON OBSTACLEMAP
 	line(obstacleMap, Point(100,300), Point(300, 300), BLACK, 2);
 	line(obstacleMap, Point(100,300), Point(100, 200), BLACK, 2);
+	line(obstacleMap, Point(10, 10), Point(obstacleMap.size().height - 10, 10), BLACK, 2);
+	line(obstacleMap, Point(10, 10), Point(10, obstacleMap.size().width - 10), BLACK, 2); 
+	line(obstacleMap, Point(obstacleMap.size().width - 10, obstacleMap.size().height - 10), Point(obstacleMap.size().width - 10, 10), BLACK, 2);
+	line(obstacleMap, Point(obstacleMap.size().width-10, obstacleMap.size().height-10), Point(10, obstacleMap.size().height-10), BLACK, 2);
 
 // GET OBSTACLE FROM MOUSE
 	Mat canvas(500,500, CV_8UC3, WHITE);
@@ -256,6 +260,7 @@ int main(){
 					setTrackbarPos("BLUE (v)", "Acceleration and Velocity", 100);
 					break;
 				}
+				cout << "command not found" << endl;
 			}
 		}
 
